@@ -19,7 +19,7 @@ export default function HomePage() {
         }
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/submit_form", {
+            const response = await fetch("{API_URL}/submit_form", {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: new URLSearchParams({ email, company, city, model, serial })

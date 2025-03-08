@@ -3,6 +3,9 @@ import { TextField, Button, Card, CardContent, CardHeader, Typography, Grid, Con
 import { toast } from "react-hot-toast";
 
 export default function AdminPage() {
+
+    console.log("Admin Page");
+
     const [model, setModel] = useState("");
     const [serial, setSerial] = useState("");
     const [qrCode, setQrCode] = useState(null);
@@ -15,7 +18,8 @@ export default function AdminPage() {
         }
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/generate_qr?model_name=${model}&serial_number=${serial}`);
+
+            const response = await fetch(`{API_URL}/generate_qr?model_name=${model}&serial_number=${serial}`);
             const data = await response.json();
 
             if (data.qr_code && data.url) {

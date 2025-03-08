@@ -12,7 +12,7 @@ export default function InvoiceViewer() {
     useEffect(() => {
         const fetchPdf = async () => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/download_pdf/?file_id=${fileId}`);
+                const response = await fetch(`{API_URL}/download_pdf/?file_id=${fileId}`);
                 if (!response.ok) throw new Error("Failed to fetch PDF");
 
                 const blob = await response.blob();
