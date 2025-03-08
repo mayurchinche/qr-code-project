@@ -2,7 +2,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 # Load credentials
-SERVICE_ACCOUNT_FILE = "../config/service_account.json"
+SERVICE_ACCOUNT_FILE = "config/service_account.json"
 SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 
 try:

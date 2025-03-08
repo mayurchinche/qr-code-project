@@ -21,13 +21,23 @@ import json
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
 import base64
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
 app = FastAPI()
 
+# Enable CORS for React frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Update if needed
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Brevo API Configuration
-BREVO_API_KEY = "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"
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 SENDER_EMAIL = "mayur.chinche2502@gmail.com"
 SENDER_NAME = "Mayur Chinche"
 
@@ -66,6 +76,19 @@ def submit_form(
                f"User Info:\nEmail: {email}\nCompany: {company}\nCity: {city}")
 
     return {"message": "Email Sent", "redirect_url": invoice_link}
+
+
+@app.get("/download_pdf/")
+def download_pdf(file_id: str):
+    """Fetches the file from Google Drive and returns it as a PDF response."""
+    drive_url = f"https://drive.google.com/uc?id={file_id}"
+
+    response = requests.get(drive_url, stream=True)
+
+    if response.status_code == 200:
+        return Response(content=response.content, media_type="application/pdf")
+    else:
+        return {"error": "Failed to fetch PDF"}
 
 
 def download_pdf_from_drive(drive_url, model, serial):
@@ -123,7 +146,7 @@ def send_email_with_pdf(to_email, subject, body, pdf_path):
 
 
 # Load credentials
-SERVICE_ACCOUNT_FILE = "../config/service_account.json"
+SERVICE_ACCOUNT_FILE = "config/service_account.json"
 SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 
 credentials = service_account.Credentials.from_service_account_file(

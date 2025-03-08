@@ -2,11 +2,11 @@ import mysql.connector
 import os
 
 # Database connection details
-DB_HOST = "mysql-oms-db-mayur-96fb.e.aivencloud.com"
-DB_PORT = 11523
-DB_USER = "avnadmin"
-DB_PASSWORD = "AVNS_nv26JjtPYWRcDqIXGc7"
-DB_NAME = "defaultdb"
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME")
 
 
 def get_db_connection():
