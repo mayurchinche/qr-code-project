@@ -10,6 +10,7 @@ const useFetchCustomers = (url) => {
 
     const fetchData = async () => {
       try {
+        console.log("url", url);
         setLoading(true);
         const response = await fetch(url);
         if (!response.ok) {

@@ -66,8 +66,8 @@ const ProductSubscription = () => {
   const queryParams = new URLSearchParams(location.search);
   const modelName = queryParams.get('model') || 'Sample Model';
   const serialNumber = queryParams.get('serial') || 'Sample Serial';
-  const catalogueURL = "https://losma.com/product/galileo-plus";
-  const manualURL = "https://losma.com/product/galileo-plus";
+  const catalogueURL = import.meta.env.VITE_CATALOGUE_URL;
+  const manualURL = import.meta.env.VITE_MANUAL_URL;
   return (
     <BackgroundWrapper>
       <MessageBox>
@@ -75,14 +75,14 @@ const ProductSubscription = () => {
         <Text>
           We appreciate your trust in Our Company. Your purchase of
           <strong> {modelName} </strong>
-          with Serial Number          <strong> {serialNumber}</strong>
+          with Serial Number          <strong> {serialNumber} </strong>
           has been successfully registered.
         </Text>
         <Text>
         <strong>Product Resources:</strong>
         </Text>
-        <ResourceLink href="https://losma.com/product/galileo-plus" target="_blank">Product Catalogue: View Catalogue</ResourceLink>
-        <ResourceLink href="https://losma.com/product/galileo-plus" target="_blank">User Manual: Read Manual</ResourceLink>
+        <ResourceLink href={catalogueURL} target="_blank">Product Catalogue: View Catalogue</ResourceLink>
+        <ResourceLink href={manualURL} target="_blank">User Manual: Read Manual</ResourceLink>
       </MessageBox>
     </BackgroundWrapper>
   );

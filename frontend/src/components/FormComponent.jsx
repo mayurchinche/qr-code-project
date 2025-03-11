@@ -103,11 +103,11 @@ const FormComponent = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [success, setSuccess] = useState(null);
-
+  const API_URL = import.meta.env.VITE_API_URL;
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://127.0.0.1:8000/submit_form', {
+      const response = await axios.post(`${API_URL}/submit_form`, {
         email,
         company_name: companyName,
         customer_city: city,

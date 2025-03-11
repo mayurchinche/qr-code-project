@@ -37,13 +37,15 @@ const Dashboard = () => {
     const [generatedURL, setGeneratedURL] = useState('');
     const [isSuccess, setIsSuccess] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false); // Loader state for the generate URL process
+    const API_URL = import.meta.env.VITE_API_URL;
+
 
     const { data: customers, loading: customersLoading, error: customersError, refetch: refetchCustomers } = useFetchCustomers(
-        loadCustomers ? 'http://127.0.0.1:8000/get_customer_queries' : null
+        loadCustomers ? `${API_URL}/get_customer_queries` : null
     );
 
     const { data: products, loading: productsLoading, error: productsError, refetch: refetchProducts } = useFetchProducts(
-        loadProducts ? 'http://127.0.0.1:8000/get_products' : null
+        loadProducts ? `${API_URL}/get_products` : null
     );
 
     useEffect(() => {
@@ -69,7 +71,7 @@ const Dashboard = () => {
 const handleGenerateURL = async () => {
     setIsGenerating(true);
     try {
-        const response = await axios.get(`http://127.0.0.1:8000/generate_qr_url?model_name=${modelName}&serial_number=${serialNumber}`);
+        const response = await axios.get(`${API_URL}/generate_qr_url?model_name=${modelName}&serial_number=${serialNumber}`);
         const data = response.data;
         console.log("data", data);
         if (data.message !== 'Already exists' && data.url) {

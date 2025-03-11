@@ -7,7 +7,8 @@ import Dashboard from './components/Dashboard';
 import FormPage from './components/FormPage';
 import ProductSubscription from './components/ProductSubscription';
 import './index.css';
-
+const API_URL = import.meta.env.VITE_API_URL;
+console.log("BACKEND API:", API_URL);
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Router>
