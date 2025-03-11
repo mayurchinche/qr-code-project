@@ -46,10 +46,13 @@ app = FastAPI()
 front_end_api = os.getenv("FRONT_END_API", "")
 catalogue_url = os.getenv("CATALOGUE_URL", "")
 manual_url = os.getenv("MANUAL_URL", "")
+
+print("FRONT_END_API", front_end_api)
+
 # Enable CORS for React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[front_end_api],  # Update if needed
+    allow_origins=[front_end_api, 'http://localhost:5173'],  # Update if needed
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
