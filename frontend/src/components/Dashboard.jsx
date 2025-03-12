@@ -38,7 +38,7 @@ const Dashboard = () => {
     const [isSuccess, setIsSuccess] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false); // Loader state for the generate URL process
     const API_URL = import.meta.env.VITE_API_URL;
-
+    const customerRowsPerPage = 10;
 
     const { data: customers, loading: customersLoading, error: customersError, refetch: refetchCustomers } = useFetchCustomers(
         loadCustomers ? `${API_URL}/get_customer_queries` : null
@@ -50,7 +50,8 @@ const Dashboard = () => {
 
     useEffect(() => {
         if (loadProducts) setCurrentPage(1);
-    }, [loadProducts]);
+        if (loadCustomers) setCurrentPage(1);
+    }, [loadProducts, loadCustomers]);
 
     const cityOptions = [...new Set(customers.map((customer) => customer.customer_city))];
 
@@ -103,6 +104,15 @@ const handleGenerateURL = async () => {
         if (currentPage * rowsPerPage < filteredProducts.length) {
             setCurrentPage(currentPage + 1);
         }
+    if (currentPage * customerRowsPerPage < filteredCustomers.length) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
     };
 
     return (
@@ -140,30 +150,41 @@ const handleGenerateURL = async () => {
                         {customersLoading && <Loader />}
                         {customersError && <p>Error fetching data: {customersError.message}</p>}
                         {!customersLoading && !customersError && (
-                            <StyledTable>
-                                <thead>
-                                    <StyledTableRow>
-                                        <StyledTableHeader>Model Name</StyledTableHeader>
-                                        <StyledTableHeader>Serial Number</StyledTableHeader>
-                                        <StyledTableHeader>Email</StyledTableHeader>
-                                        <StyledTableHeader>City</StyledTableHeader>
-                                        <StyledTableHeader>Company Name</StyledTableHeader>
-                                        <StyledTableHeader>Date</StyledTableHeader>
-                                    </StyledTableRow>
-                                </thead>
-                                <tbody>
-                                    {filteredCustomers.map((customer, index) => (
-                                        <StyledTableRow key={index}>
-                                            <StyledTableCell>{customer.model_name}</StyledTableCell>
-                                            <StyledTableCell>{customer.serial_number}</StyledTableCell>
-                                            <StyledTableCell>{customer.customer_gmail}</StyledTableCell>
-                                            <StyledTableCell>{customer.customer_city}</StyledTableCell>
-                                            <StyledTableCell>{customer.company_name}</StyledTableCell>
-                                            <StyledTableCell>{new Date(customer.created_at).toLocaleDateString()}</StyledTableCell>
+                            <div>
+                                <StyledTable>
+
+                                    <thead>
+                                        <StyledTableRow>
+                                            <StyledTableHeader>Model Name</StyledTableHeader>
+                                            <StyledTableHeader>Serial Number</StyledTableHeader>
+                                            <StyledTableHeader>Email</StyledTableHeader>
+                                            <StyledTableHeader>City</StyledTableHeader>
+                                            <StyledTableHeader>Company Name</StyledTableHeader>
+                                            <StyledTableHeader>Date</StyledTableHeader>
                                         </StyledTableRow>
-                                    ))}
-                                </tbody>
-                            </StyledTable>
+                                    </thead>
+                                    <tbody>
+                                        {filteredCustomers.slice((currentPage - 1) * customerRowsPerPage, currentPage * customerRowsPerPage).map((customer, index) => (
+                                            <StyledTableRow key={index}>
+                                                <StyledTableCell>{customer.model_name}</StyledTableCell>
+                                                <StyledTableCell>{customer.serial_number}</StyledTableCell>
+                                                <StyledTableCell>{customer.customer_gmail}</StyledTableCell>
+                                                <StyledTableCell>{customer.customer_city}</StyledTableCell>
+                                                <StyledTableCell>{customer.company_name}</StyledTableCell>
+                                                <StyledTableCell>{new Date(customer.created_at).toLocaleDateString()}</StyledTableCell>
+                                            </StyledTableRow>
+                                        ))}
+                                    </tbody>
+                                </StyledTable>
+                                 {filteredCustomers.length > customerRowsPerPage && (
+                                                                            <div style={{ textAlign: 'right', margin: '10px' }}>
+{/*                                             <DashboardButton onClick={handlePrevPage}>Previous</DashboardButton> */}
+{/*                                             <DashboardButton onClick={handleNextPage}>Next</DashboardButton> */}
+                                            <DashboardButton onClick={handlePrevPage} disabled={currentPage === 1}>Previous</DashboardButton>
+                                            <DashboardButton onClick={handleNextPage} disabled={currentPage * customerRowsPerPage >= filteredCustomers.length}>Next</DashboardButton>
+                                        </div>
+                                    )}
+                            </div>
                         )}
                     </TableWrapper>
                 </div>
@@ -211,11 +232,13 @@ const handleGenerateURL = async () => {
                                         ))}
                                     </tbody>
                                 </StyledTable>
-                                {currentPage * rowsPerPage < filteredProducts.length && (
+                                {filteredProducts.length > rowsPerPage && (
                                                                         <div style={{ textAlign: 'right', margin: '10px' }}>
-                                        <DashboardButton onClick={handleNextPage}>Next</DashboardButton>
-                                    </div>
+                                                                  <DashboardButton onClick={handlePrevPage} disabled={currentPage === 1}> Previous</DashboardButton>
+                                                                  <DashboardButton onClick={handleNextPage} disabled={currentPage * rowsPerPage >= filteredProducts.length}>Next</DashboardButton>
+                                                   </div>
                                 )}
+
                             </div>
                         )}
                     </TableWrapper>

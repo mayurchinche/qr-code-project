@@ -38,11 +38,17 @@ export const DashboardButton = styled.button`
   &:hover {
     background-color: #0056b3;
   }
-
+  &:disabled {
+        background-color: #d3d3d3; /* Light Grey */
+        color: #a1a1a1; /* Dimmed text */
+        cursor: not-allowed;
+    }
   @media (max-width: 768px) {
     width: 100%;
     margin: 8px 0;
   }
+
+
 `;
 
 export const TableWrapper = styled.div`
