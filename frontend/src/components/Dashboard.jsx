@@ -19,7 +19,12 @@ import {
     StyledLabel,
     StyledInput,
     GenerateButton,
-    SuccessMessage
+    FormRow,
+    Title,
+    SuccessMessage,
+    InnerContainer,
+    CopyButton,
+    FieldContainer
 } from './dashboardStyles';
 
 const Dashboard = () => {
@@ -92,6 +97,19 @@ const handleGenerateURL = async () => {
         setIsGenerating(false);
     }
 };
+  const handleCopyURL = () => {
+    if (generatedURL) {
+      navigator.clipboard.writeText(generatedURL).then(
+        () => {
+          alert('URL copied to clipboard!');
+        },
+        (err) => {
+          console.error('Failed to copy URL: ', err);
+          alert('Failed to copy URL.');
+        }
+      );
+    }
+  };
 
     const refreshCurrentView = () => {
         if (loadCustomers) {
@@ -247,40 +265,53 @@ const handleGenerateURL = async () => {
                             </div>
                         )}
                     </TableWrapper>
-                    <FormContainer>
-                        <h3>Generate Scanner URL for New Material</h3>
-                        <StyledLabel>Model Name</StyledLabel>
-                        <StyledInput
-                            type="text"
-                            value={modelName}
-                            onChange={(e) => setModelName(e.target.value)}
-                        />
-                        <StyledLabel>Serial Number</StyledLabel>
-                        <StyledInput
-                            type="text"
-                            value={serialNumber}
-                            onChange={(e) => setSerialNumber(e.target.value)}
-                        />
-                        <StyledLabel>Mfg_Year</StyledLabel>
-                        <StyledInput
-                            type="text"
-                            value={mfg_year}
-                            onChange={(e) => setMfgYear(e.target.value)}
-                        />
-                        <GenerateButton onClick={handleGenerateURL} disabled={isGenerating}>
-                            {isGenerating ? 'Generating...' : 'Generate'}
-                        </GenerateButton>
-                            {isSuccess && (
 
-                                <SuccessMessage>
-                                    URL generated successfully:
-                                    <a href={generatedURL} target="_blank" rel="noopener noreferrer">
-                                        {generatedURL}
-                                    </a>
-                                </SuccessMessage>
-                            )}
-                    </FormContainer>
-                </div>
+                    <FormContainer>
+      <InnerContainer>
+        <Title>Generate Scanner URL for New Material</Title>
+        <FormRow>
+          <FieldContainer>
+            <StyledLabel>Model Name</StyledLabel>
+            <StyledInput
+              type="text"
+              value={modelName}
+              onChange={(e) => setModelName(e.target.value)}
+            />
+          </FieldContainer>
+          <FieldContainer>
+            <StyledLabel>Serial Number</StyledLabel>
+            <StyledInput
+              type="text"
+              value={serialNumber}
+              onChange={(e) => setSerialNumber(e.target.value)}
+            />
+          </FieldContainer>
+          <FieldContainer>
+            <StyledLabel>Mfg Year</StyledLabel>
+            <StyledInput
+              type="text"
+              value={mfg_year}
+              onChange={(e) => setMfgYear(e.target.value)}
+            />
+          </FieldContainer>
+          <GenerateButton onClick={handleGenerateURL} disabled={isGenerating}>
+            {isGenerating ? 'Generating...' : 'Generate'}
+          </GenerateButton>
+        </FormRow>
+        {isSuccess && (
+          <SuccessMessage>
+            URL generated successfully:{' '}
+            <a href={generatedURL} target="_blank" rel="noopener noreferrer">
+              {generatedURL}
+            </a>
+            <CopyButton onClick={handleCopyURL}>
+              Copy
+            </CopyButton>
+          </SuccessMessage>
+        )}
+      </InnerContainer>
+    </FormContainer>
+    </div>
             )}
         </DashboardContainer>
     );

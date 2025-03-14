@@ -199,8 +199,7 @@ const QRCodeForm = () => {
               <Label>City *</Label>
               <Input type="text" value={city} onChange={(e) => setCity(e.target.value)} required />
             </FormGroup>
-
-                        <CheckboxGroup>
+            <CheckboxGroup>
   <InfoText>
     We will be storing your data for future use.
   </InfoText>
@@ -211,8 +210,7 @@ const QRCodeForm = () => {
 </CheckboxGroup>
 
 <div style={{ marginTop: '20px' }}></div>
-
-            <SubmitButton type="submit">SEND</SubmitButton>
+          <SubmitButton type="submit">SEND</SubmitButton>
           </form>
         </FormBox>
       </FormContainer>

@@ -123,47 +123,138 @@ export const RefreshButton = styled.button`
     border: none;
     border-radius: 5px;
 `;
+
+
+
 export const FormContainer = styled.div`
-    margin-top: 20px;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    width: 100%;
-    max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 30px;
+  @media (max-width: 768px) {
+    padding: 15px;
+  }
+`;
+export const FormRow = styled.div`
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 `;
 
+export const Title = styled.h3`
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  text-align: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+  width: 100%;
+  @media (max-width: 768px) {
+  width: 100%;
+    padding: 8px;
+  }
+`;
+
+
+
 export const StyledLabel = styled.label`
+  margin-bottom: 5px;
+  font-weight: bold;
+
+  @media (max-width: 768px) {
     display: block;
-    margin: 10px 0 5px;
-    font-weight: bold;
+  }
 `;
 
 export const StyledInput = styled.input`
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 200px;
+
+  @media (max-width: 768px) {
     width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+  }
 `;
 
 export const GenerateButton = styled.button`
+  padding: 10px 15px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007BFF;
+  color: white;
+  cursor: pointer;
+  margin-left: 10px;
+
+  &:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    margin-left: 0;
     margin-top: 10px;
-    padding: 10px 20px;
-    font-size: 1rem;
-    cursor: pointer;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
+  }
 `;
 
-export const SuccessMessage = styled.p`
-    margin-top: 10px;
-    color: green;
-    font-weight: bold;
-    a {
-        color: #007bff;
-        text-decoration: none;
-    }
+export const SuccessMessage = styled.div`
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  @media (max-width: 768px) {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
+`;
+
+export const CopyButton = styled.button`
+  margin-left: 10px;
+  padding: 5px 10px;
+  font-size: 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: #28a745;
+  color: white;
+  cursor: pointer;
+`;
+
+
+export const InnerContainer = styled.div`
+  max-width: 900px;
+  width: 100%;
+`;
+
+export const FieldContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-right: 10px;
+  margin-bottom: 10px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
 `;
