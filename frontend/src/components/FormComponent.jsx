@@ -98,6 +98,7 @@ const FormComponent = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const [modelName, setModelName] = useState(urlParams.get('model') || '');
   const [serialNumber, setSerialNumber] = useState(urlParams.get('serial') || '');
+  const [mfg_year, setMfgYear] = useState(urlParams.get('mfg_year') || '');
   const [companyName, setCompanyName] = useState('');
   const [city, setCity] = useState('');
   const [email, setEmail] = useState('');
@@ -113,6 +114,7 @@ const FormComponent = () => {
         customer_city: city,
         model_name: modelName,
         serial_number: serialNumber,
+        mfg_year: mfg_year,
       }, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -121,7 +123,7 @@ const FormComponent = () => {
 
       if (response.data.message === 'Email Sent') {
         setSuccess(true);
-        navigate(`/product_subscription?model=${modelName}&serial=${serialNumber}`);
+        navigate(`/product_subscription?model=${modelName}&serial=${serialNumber}&mfg_year=${mfg_year}`);
       } else {
         setSuccess(false);
         setMessage('Submission failed.');
@@ -148,6 +150,12 @@ const FormComponent = () => {
             type="text"
             value={serialNumber}
             placeholder="Serial Number"
+            disabled
+          />
+           <StyledInput
+            type="text"
+            value={mfg_year}
+            placeholder="Mfg Year"
             disabled
           />
           <StyledInput

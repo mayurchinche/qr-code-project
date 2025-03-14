@@ -6,7 +6,7 @@ import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import FormPage from './components/FormPage';
 import ProductSubscription from './components/ProductSubscription';
-
+import QRCodeForm from './components/losma_form';
 
 import './index.css';
 const API_URL = import.meta.env.VITE_API_URL;
@@ -19,6 +19,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/login" element={<LoginPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/form" element={<FormPage />} />
+        <Route path="/QRCodeForm" element={<QRCodeForm />} />
         <Route path="/product_subscription" element={<ProductSubscription />} />
       </Routes>
     </Router>

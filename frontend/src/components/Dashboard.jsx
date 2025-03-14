@@ -34,6 +34,7 @@ const Dashboard = () => {
     const rowsPerPage = 5;
     const [modelName, setModelName] = useState('');
     const [serialNumber, setSerialNumber] = useState('');
+    const [mfg_year, setMfgYear] = useState('');
     const [generatedURL, setGeneratedURL] = useState('');
     const [isSuccess, setIsSuccess] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false); // Loader state for the generate URL process
@@ -72,7 +73,7 @@ const Dashboard = () => {
 const handleGenerateURL = async () => {
     setIsGenerating(true);
     try {
-        const response = await axios.get(`${API_URL}/generate_qr_url?model_name=${modelName}&serial_number=${serialNumber}`);
+        const response = await axios.get(`${API_URL}/generate_qr_url?model_name=${modelName}&serial_number=${serialNumber}&mfg_year=${mfg_year}`);
         const data = response.data;
         console.log("data", data);
         if (data.message !== 'Already exists' && data.url) {
@@ -157,6 +158,7 @@ const handleGenerateURL = async () => {
                                         <StyledTableRow>
                                             <StyledTableHeader>Model Name</StyledTableHeader>
                                             <StyledTableHeader>Serial Number</StyledTableHeader>
+                                            <StyledTableHeader>Mfg_Year</StyledTableHeader>
                                             <StyledTableHeader>Email</StyledTableHeader>
                                             <StyledTableHeader>City</StyledTableHeader>
                                             <StyledTableHeader>Company Name</StyledTableHeader>
@@ -168,6 +170,7 @@ const handleGenerateURL = async () => {
                                             <StyledTableRow key={index}>
                                                 <StyledTableCell>{customer.model_name}</StyledTableCell>
                                                 <StyledTableCell>{customer.serial_number}</StyledTableCell>
+                                                <StyledTableCell>{customer.mfg_year}</StyledTableCell>
                                                 <StyledTableCell>{customer.customer_gmail}</StyledTableCell>
                                                 <StyledTableCell>{customer.customer_city}</StyledTableCell>
                                                 <StyledTableCell>{customer.company_name}</StyledTableCell>
@@ -213,6 +216,7 @@ const handleGenerateURL = async () => {
                                         <StyledTableRow>
                                             <StyledTableHeader>Model Name</StyledTableHeader>
                                             <StyledTableHeader>Serial Number</StyledTableHeader>
+                                            <StyledTableHeader>Mfg_Year</StyledTableHeader>
                                             <StyledTableHeader>Material URL</StyledTableHeader>
                                             <StyledTableHeader>Created At</StyledTableHeader>
                                         </StyledTableRow>
@@ -222,6 +226,7 @@ const handleGenerateURL = async () => {
                                             <StyledTableRow key={index}>
                                                 <StyledTableCell>{product.model_name}</StyledTableCell>
                                                 <StyledTableCell>{product.serial_number}</StyledTableCell>
+                                                <StyledTableCell>{product.mfg_year}</StyledTableCell>
                                                 <StyledTableCell>
                                                     <a href={product.material_url} target="_blank" rel="noopener noreferrer">
                                                         {product.material_url}
@@ -255,6 +260,12 @@ const handleGenerateURL = async () => {
                             type="text"
                             value={serialNumber}
                             onChange={(e) => setSerialNumber(e.target.value)}
+                        />
+                        <StyledLabel>Mfg_Year</StyledLabel>
+                        <StyledInput
+                            type="text"
+                            value={mfg_year}
+                            onChange={(e) => setMfgYear(e.target.value)}
                         />
                         <GenerateButton onClick={handleGenerateURL} disabled={isGenerating}>
                             {isGenerating ? 'Generating...' : 'Generate'}

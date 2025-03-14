@@ -9,6 +9,7 @@ def create_tables():
     CREATE TABLE IF NOT EXISTS product_details (
         model_name VARCHAR(255) NOT NULL,
         serial_number VARCHAR(255) NOT NULL,
+        mfg_year VARCHAR(255) NOT NULL,
         material_url VARCHAR(500) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (model_name, serial_number)  -- Composite Primary Key
@@ -24,6 +25,7 @@ def create_tables():
             id INT AUTO_INCREMENT PRIMARY KEY,
             model_name VARCHAR(255) NOT NULL,
             serial_number VARCHAR(255) NOT NULL,
+            mfg_year VARCHAR(255) NOT NULL,
             customer_gmail VARCHAR(255) NOT NULL,
             customer_city VARCHAR(255) NOT NULL,
             company_name VARCHAR(255) NOT NULL,

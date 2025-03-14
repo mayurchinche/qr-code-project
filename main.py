@@ -75,6 +75,7 @@ email_api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiCli
 class ProductDetail(BaseModel):
     model_name: str
     serial_number: str
+    mfg_year: str
     material_url: str
     created_at: str  # Keep as string to avoid datetime formatting issues
 
@@ -86,7 +87,7 @@ def get_products():
     cursor = connection.cursor()
 
     query = """
-        SELECT model_name, serial_number, material_url, created_at 
+        SELECT model_name, serial_number,mfg_year, material_url, created_at 
         FROM product_details
     """
     cursor.execute(query)
@@ -97,8 +98,8 @@ def get_products():
 
     products = []
     for row in results:
-        model_name, serial_number, material_url, created_at = row
-        print(model_name, serial_number, material_url, created_at)
+        model_name, serial_number, mfg_year, material_url, created_at = row
+        print(model_name, serial_number, mfg_year, material_url, created_at)
         # Convert created_at from UTC to IST
         if created_at:
             created_at = created_at.replace(tzinfo=timezone.utc).astimezone(IST).strftime('%Y-%m-%d %H:%M:%S')
@@ -106,6 +107,7 @@ def get_products():
         products.append({
             "model_name": model_name,
             "serial_number": serial_number,
+            "mfg_year": mfg_year,
             "material_url": material_url,
             "created_at": created_at
         })
@@ -117,6 +119,7 @@ def get_products():
 class CustomerQuery(BaseModel):
     model_name: str
     serial_number: str
+    mfg_year: str
     customer_gmail: str
     customer_city: str
     company_name: str
@@ -131,7 +134,7 @@ def get_customer_queries():
     cursor = connection.cursor()
 
     query = """
-        SELECT model_name, serial_number, customer_gmail, customer_city, company_name, created_at 
+        SELECT model_name, serial_number, mfg_year,customer_gmail, customer_city, company_name, created_at 
         FROM product_queries
     """
     cursor.execute(query)
@@ -141,7 +144,7 @@ def get_customer_queries():
 
     queries = []
     for row in results:
-        model_name, serial_number, customer_gmail, customer_city, company_name, created_at = row
+        model_name, serial_number, mfg_year, customer_gmail, customer_city, company_name, created_at = row
 
         # Convert MySQL datetime to string format
         created_at = created_at.strftime('%Y-%m-%d %H:%M:%S') if created_at else None
@@ -149,6 +152,7 @@ def get_customer_queries():
         queries.append({
             "model_name": model_name,
             "serial_number": serial_number,
+            "mfg_year": mfg_year,
             "customer_gmail": customer_gmail,
             "customer_city": customer_city,
             "company_name": company_name,
@@ -159,18 +163,18 @@ def get_customer_queries():
 
 
 @app.get("/generate_qr_url", summary="Generate QR Code with URL", tags=["QR Code"])
-def generate_qr_url(model_name: str, serial_number: str):
+def generate_qr_url(model_name: str, serial_number: str, mfg_year: str):
     """Generate a QR Code with a URL containing model and serial number."""
-    material_url = f"{front_end_api}/form?model={model_name}&serial={serial_number}"
+    material_url = f"{front_end_api}/form?model={model_name}&serial={serial_number}&mfg_year={mfg_year}"
 
     connection = get_db_connection()
     cursor = connection.cursor()
 
     # **1️⃣ Check if the entry already exists**
     check_query = """
-        SELECT COUNT(*) FROM product_details WHERE model_name = %s AND serial_number = %s
+        SELECT COUNT(*) FROM product_details WHERE model_name = %s AND serial_number = %s AND mfg_year = %s
     """
-    cursor.execute(check_query, (model_name, serial_number))
+    cursor.execute(check_query, (model_name, serial_number, mfg_year))
     (count,) = cursor.fetchone()
 
     if count > 0:
@@ -180,10 +184,10 @@ def generate_qr_url(model_name: str, serial_number: str):
 
     # **2️⃣ Insert if not exists**
     insert_query = """
-        INSERT INTO product_details (model_name, serial_number, material_url)
-        VALUES (%s, %s, %s)
+        INSERT INTO product_details (model_name, serial_number,mfg_year, material_url)
+        VALUES (%s, %s,%s, %s)
     """
-    cursor.execute(insert_query, (model_name, serial_number, material_url))
+    cursor.execute(insert_query, (model_name, serial_number, mfg_year, material_url))
     connection.commit()
 
     # **3️⃣ Generate QR Code**
@@ -201,7 +205,7 @@ def generate_qr_url(model_name: str, serial_number: str):
 @app.post("/submit_form", summary="Submit Form & Send Email", tags=["Form Submission"])
 def submit_form(
         email: str = Form(...), company_name: str = Form(...), customer_city: str = Form(...),
-        model_name: str = Form(...), serial_number: str = Form(...)):
+        model_name: str = Form(...), serial_number: str = Form(...), mfg_year: str = Form(...)):
     """Submit form and send email using Brevo."""
     # invoice_link = view_invoice(model, serial)
     #
@@ -211,24 +215,24 @@ def submit_form(
     connection = get_db_connection()
     cursor = connection.cursor()
     insert_query = """
-                INSERT INTO product_queries (model_name, serial_number, customer_gmail,customer_city,company_name)
-                VALUES (%s, %s, %s,%s, %s)
+                INSERT INTO product_queries (model_name, serial_number,mfg_year, customer_gmail,customer_city,company_name)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """
-    cursor.execute(insert_query, (model_name, serial_number, email, customer_city, company_name))
+    cursor.execute(insert_query, (model_name, serial_number, mfg_year, email, customer_city, company_name))
     connection.commit()
     cursor.close()
     connection.close()
 
     """Send a professional purchase confirmation email to the customer."""
 
-    subject = f"🎉 Thank You for Purchasing {model_name} - Serial: {serial_number}"
+    subject = f"🎉 Thank You for Purchasing {model_name} - Serial: {serial_number} - Mfg Year: {mfg_year}"
 
     html_content = f"""
         <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <h2 style="color: #1a73e8;">Thank You for Your Purchase!</h2>
             <p>Dear Customer,</p>
-            <p>We appreciate your trust in <b>Our Company</b>. Your purchase of <b>{model_name}</b> with Serial Number <b>{serial_number}</b> has been successfully registered.</p>
+            <p>We appreciate your trust in <b>Our Company</b>. Your purchase of <b>{model_name}</b> with Serial Number <b>{serial_number}</b></b> Manufacturing Year of <b>{mfg_year}</b> has been successfully registered.</p>
 
             <h3>📘 Product Resources:</h3>
             <ul>

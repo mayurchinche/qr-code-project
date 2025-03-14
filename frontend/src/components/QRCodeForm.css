@@ -1,0 +1,75 @@
+/* QRCodeForm.css */
+
+.form-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Aligns form to the top, just below the separator */
+  min-height: auto; /* Remove full viewport height constraint */
+  margin-top: 10px; /* Adjust spacing between separator and form */
+}
+
+
+.form-box {
+  width: 60%;
+  padding: 40px;
+  border: none;
+  box-shadow: none;
+}
+
+.form-title {
+  color: #008037;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+label {
+  font-weight: bold;
+  color: #008037;
+  font-size: 14px;
+}
+
+input {
+  border: none;
+  border-bottom: 2px solid #008037;
+  padding: 8px;
+  font-size: 16px;
+  outline: none;
+  background: transparent;
+  width: 100%;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.submit-button {
+  width: 100%;
+  background-color: #008037;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 12px;
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.submit-button:hover {
+  background-color: #00682e;
+}
+.separator {
+  width: 100%;
+  height: 2px; /* Adjust thickness */
+  background-color: #4CAF50; /* Match form color */
+  margin: 5px 0; /* Reduce space above and below */
+}
