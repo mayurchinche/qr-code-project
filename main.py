@@ -16,6 +16,12 @@ from typing import List
 from pydantic import BaseModel
 from datetime import datetime, timezone, timedelta
 
+from fastapi import FastAPI, HTTPException, Depends
+from pydantic import BaseModel
+from typing import List
+import mysql.connector
+from datetime import datetime
+
 # Define IST timezone
 IST = timezone(timedelta(hours=5, minutes=30))
 load_dotenv()
@@ -200,6 +206,29 @@ def generate_qr_url(model_name: str, serial_number: str, mfg_year: str):
     connection.close()
 
     return {"qr_code": f"data:image/png;base64,{qr_base64}", "url": material_url}
+
+
+@app.post("/check_registration", summary="Check if customer is registered", tags=["Customer Queries"])
+def check_registration(
+        model_name: str = Form(...),
+        serial_number: str = Form(...),
+        mfg_year: str = Form(...),
+        email: str = Form(...)
+):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    query = """
+        SELECT EXISTS(
+            SELECT 1 FROM product_queries
+            WHERE model_name = %s AND serial_number = %s AND mfg_year = %s AND customer_gmail = %s
+        ) AS already_exists
+    """
+    cursor.execute(query, (model_name, serial_number, mfg_year, email))
+    result = cursor.fetchone()
+    cursor.close()
+    connection.close()
+    exists = result[0] == 1
+    return {"exists": exists}
 
 
 @app.post("/submit_form", summary="Submit Form & Send Email", tags=["Form Submission"])

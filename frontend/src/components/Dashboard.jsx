@@ -24,7 +24,8 @@ import {
     SuccessMessage,
     InnerContainer,
     CopyButton,
-    FieldContainer
+    FieldContainer,
+    ErrorMessage
 } from './dashboardStyles';
 
 const Dashboard = () => {
@@ -42,10 +43,12 @@ const Dashboard = () => {
     const [mfg_year, setMfgYear] = useState('');
     const [generatedURL, setGeneratedURL] = useState('');
     const [isSuccess, setIsSuccess] = useState(false);
+    const [isAlreadyExists, setIsAlreadyExists] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false); // Loader state for the generate URL process
     const API_URL = import.meta.env.VITE_API_URL;
     const customerRowsPerPage = 10;
-
+    const [copied, setCopied] = useState(false);
+    const [error, setError] = useState(false);
     const { data: customers, loading: customersLoading, error: customersError, refetch: refetchCustomers } = useFetchCustomers(
         loadCustomers ? `${API_URL}/get_customer_queries` : null
     );
@@ -76,6 +79,12 @@ const Dashboard = () => {
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Sort by latest first
 
 const handleGenerateURL = async () => {
+
+    if (modelName.trim() === '' || serialNumber.trim() === '' || mfg_year.trim() === '') {
+      setError('* Model Name, Serial Number and Mfg Year are required');
+      return;
+    }
+    setError('');
     setIsGenerating(true);
     try {
         const response = await axios.get(`${API_URL}/generate_qr_url?model_name=${modelName}&serial_number=${serialNumber}&mfg_year=${mfg_year}`);
@@ -84,11 +93,15 @@ const handleGenerateURL = async () => {
         if (data.message !== 'Already exists' && data.url) {
             setGeneratedURL(data.url);
             setIsSuccess(true);
+            setIsAlreadyExists(false);
+            setCopied(false); // Reset copied state
             await refetchProducts(); // Refresh the table with the latest data
         } else if (data.message && data.message === 'Already exists') {
-            setGeneratedURL('');
-            alert('URL already exists');
             setIsSuccess(false);
+            setIsAlreadyExists(true);
+            setGeneratedURL(data.url);
+            console.log('URL already exists');
+            setCopied(false);
         }
     } catch (error) {
         console.error('Error generating URL:', error);
@@ -101,11 +114,14 @@ const handleGenerateURL = async () => {
     if (generatedURL) {
       navigator.clipboard.writeText(generatedURL).then(
         () => {
-          alert('URL copied to clipboard!');
+            setCopied(true);
+          setTimeout(() => setCopied(false), 3000); // Reset copied state after 3 seconds
+
+          console.log('URL copied to clipboard!');
         },
         (err) => {
           console.error('Failed to copy URL: ', err);
-          alert('Failed to copy URL.');
+          console.log('Failed to copy URL.');
         }
       );
     }
@@ -113,8 +129,21 @@ const handleGenerateURL = async () => {
 
     const refreshCurrentView = () => {
         if (loadCustomers) {
+            setIsSuccess(false);
+            setMfgYear('')
+            setSerialNumber('')
+            setModelName('')
+            setIsAlreadyExists(false);
+            setError(false);
             refetchCustomers();
         } else if (loadProducts) {
+            setIsSuccess(false);
+            setMfgYear('')
+            setSerialNumber('')
+            setModelName('')
+            setError(false);
+            setIsSuccess(false);
+            setIsAlreadyExists(false);
             refetchProducts();
         }
     };
@@ -275,6 +304,8 @@ const handleGenerateURL = async () => {
             <StyledInput
               type="text"
               value={modelName}
+              aria-required="true"
+              aria-invalid={error ? "true" : "false"}
               onChange={(e) => setModelName(e.target.value)}
             />
           </FieldContainer>
@@ -283,6 +314,8 @@ const handleGenerateURL = async () => {
             <StyledInput
               type="text"
               value={serialNumber}
+              aria-required="true"
+              aria-invalid={error ? "true" : "false"}
               onChange={(e) => setSerialNumber(e.target.value)}
             />
           </FieldContainer>
@@ -291,6 +324,8 @@ const handleGenerateURL = async () => {
             <StyledInput
               type="text"
               value={mfg_year}
+              aria-required="true"
+              aria-invalid={error ? "true" : "false"}
               onChange={(e) => setMfgYear(e.target.value)}
             />
           </FieldContainer>
@@ -304,11 +339,23 @@ const handleGenerateURL = async () => {
             <a href={generatedURL} target="_blank" rel="noopener noreferrer">
               {generatedURL}
             </a>
-            <CopyButton onClick={handleCopyURL}>
-              Copy
+            <CopyButton copied={copied} onClick={handleCopyURL}>
+              {copied ? 'Copied' : 'Copy'}
             </CopyButton>
           </SuccessMessage>
         )}
+        {isAlreadyExists && (
+          <SuccessMessage>
+            URL already exists:{' '}
+            <a href={generatedURL} target="_blank" rel="noopener noreferrer">
+              {generatedURL}
+            </a>
+            <CopyButton copied={copied} onClick={handleCopyURL}>
+              {copied ? 'Copied' : 'Copy'}
+            </CopyButton>
+          </SuccessMessage>
+        )}
+        {error && <ErrorMessage>{error}</ErrorMessage>}
       </InnerContainer>
     </FormContainer>
     </div>

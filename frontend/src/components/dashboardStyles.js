@@ -30,13 +30,13 @@ export const DashboardButton = styled.button`
   margin: 10px;
   border: none;
   border-radius: 4px;
-  background-color: #007bff;
+  background-color: #008037;
   color: white;
   font-size: 16px;
   cursor: pointer;
 
   &:hover {
-    background-color: #0056b3;
+    background-color: #054922;
   }
   &:disabled {
         background-color: #d3d3d3; /* Light Grey */
@@ -73,7 +73,7 @@ export const StyledTable = styled.table`
 
 export const StyledTableHeader = styled.th`
   padding: 12px;
-  background-color: #007bff;
+  background-color: #008037;
   color: white;
   text-align: left;
   border-bottom: 1px solid #ddd;
@@ -118,10 +118,22 @@ export const RefreshButton = styled.button`
     padding: 10px 20px;
     font-size: 1rem;
     cursor: pointer;
-    background-color: #007bff;
+    background-color: #008037;
     color: white;
     border: none;
     border-radius: 5px;
+      &:hover {
+    background-color: #054922;
+  }
+  &:disabled {
+        background-color: #d3d3d3; /* Light Grey */
+        color: #a1a1a1; /* Dimmed text */
+        cursor: not-allowed;
+    }
+  @media (max-width: 768px) {
+    width: 100%;
+    margin: 8px 0;
+  }
 `;
 
 
@@ -155,7 +167,7 @@ export const FormRow = styled.div`
 
 export const Title = styled.h3`
   padding: 12px;
-  background-color: #007bff;
+  background-color: #008037;
   color: white;
   text-align: center;
   margin-bottom: 20px;
@@ -195,7 +207,7 @@ export const GenerateButton = styled.button`
   font-size: 16px;
   border: none;
   border-radius: 4px;
-  background-color: #007BFF;
+  background-color: #008037;
   color: white;
   cursor: pointer;
   margin-left: 10px;
@@ -209,6 +221,13 @@ export const GenerateButton = styled.button`
     width: 100%;
     margin-left: 0;
     margin-top: 10px;
+  }
+    &:hover {
+    background-color: #054922;
+  }
+  @media (max-width: 768px) {
+    width: 100%;
+    margin: 8px 0;
   }
 `;
 
@@ -235,9 +254,11 @@ export const CopyButton = styled.button`
   font-size: 12px;
   border: none;
   border-radius: 4px;
-  background-color: #28a745;
+  background-color: #008037;
   color: white;
   cursor: pointer;
+  background-color: ${(props) => (props.copied ? '#6c757d' : '#28a745')};
+
 `;
 
 
@@ -257,4 +278,10 @@ export const FieldContainer = styled.div`
     margin-right: 0;
     margin-bottom: 15px;
   }
+`;
+
+
+export const ErrorMessage = styled.div`
+  color: red;
+  margin-top: 10px;
 `;

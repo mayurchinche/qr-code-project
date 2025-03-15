@@ -2,6 +2,36 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import styled from "@emotion/styled";
+import { FaExclamationTriangle } from "react-icons/fa";
+
+const AlertBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background-color: rgba(255, 0, 0, 0.1);
+  border-left: 5px solid red;
+  color: red;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  animation: fadeIn 0.5s ease-in-out;
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+`;
+
+const CloseButton = styled.button`
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: red;
+  cursor: pointer;
+  margin-left: auto;
+`;
 
 const PageContainer = styled.div`
   display: flex;
@@ -46,7 +76,7 @@ const FormTitle = styled.h2`
   text-align: left;
   margin-bottom: 20px;
 
-  @media (max-width: 768px) {
+  @  @media (max-width: 768px) {
     font-size: 20px;
     text-align: left;
     margin-left: 5px;
@@ -117,29 +147,72 @@ const Separator = styled.div`
   margin: 5px 0;
 `;
 
+const ErrorMessage = styled.div`
+  color: red;
+  margin-top: 10px;
+`;
+
+const SuccessMessage = styled.div`
+  color: green;
+  margin-top: 10px;
+`;
+
 const QRCodeForm = () => {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const [model, setModel] = useState(urlParams.get("model") || "");
   const [serial, setSerial] = useState(urlParams.get("serial") || "");
-  const [mfg_year, setMfgYear] = useState(urlParams.get("mfg_year") || "");
+  const [mfgYear, setMfgYear] = useState(urlParams.get("mfg_year") || "");
   const [company, setCompany] = useState("");
   const [city, setCity] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const API_URL = import.meta.env.VITE_API_URL;
 
+const ErrorMessage = ({ message, onClose }) => {
+  if (!message) return null;
+  return (
+    <AlertBox>
+      <FaExclamationTriangle />
+      {message}
+      <CloseButton onClick={onClose}>×</CloseButton>
+    </AlertBox>
+  );
+};
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage("");
+    setSuccess(null);
+    setIsProcessing(true); // Set processing state to true
+
     try {
+      // Check if the customer is already registered
+      const checkResponse = await axios.post(`${API_URL}/check_registration`, {
+        email: String(email),
+        model_name: String(model),
+        serial_number: String(serial),
+        mfg_year: String(mfgYear)
+      }, {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
+
+      if (checkResponse.data.exists) {
+        setMessage("You have already registered for this product.");
+        setIsProcessing(false); // Set processing state to false
+        return;
+      }
+      // Proceed with form submission if not registered
       const response = await axios.post(`${API_URL}/submit_form`, {
-        email,
-        company_name: company,
-        customer_city: city,
-        model_name: model,
-        serial_number: serial,
-        mfg_year: mfg_year,
+        email: String(email),
+        company_name: String(company),
+        customer_city: String(city),
+        model_name: String(model),
+        serial_number: String(serial),
+        mfg_year: String(mfgYear)
       }, {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -148,7 +221,8 @@ const QRCodeForm = () => {
 
       if (response.data.message === "Email Sent") {
         setSuccess(true);
-        navigate(`/product_subscription?model=${model}&serial=${serial}&mfg_year=${mfg_year}`);
+        setMessage("");
+        navigate(`/product_subscription?model=${model}&serial=${serial}&mfg_year=${mfgYear}`);
       } else {
         setSuccess(false);
         setMessage("Submission failed.");
@@ -157,6 +231,8 @@ const QRCodeForm = () => {
       setSuccess(false);
       setMessage("An error occurred while submitting the form.");
       console.error("Submit form error:", error);
+    } finally {
+      setIsProcessing(false); // Ensure processing state is reset
     }
   };
 
@@ -164,11 +240,13 @@ const QRCodeForm = () => {
     <PageContainer>
       <Header>
         <img src="/images/losma_2_logo.png" alt="Company Logo" className="form-logo responsive-logo top-left-logo" />
-        <Separator />
+               <Separator />
       </Header>
       <FormContainer>
         <FormBox>
           <FormTitle>Fill out the form to receive your product manual</FormTitle>
+          {message && <ErrorMessage>{message}</ErrorMessage>}
+          {success && <SuccessMessage>Form submitted successfully!</SuccessMessage>}
           <form onSubmit={handleSubmit}>
             <FormGroup>
               <Label>Series and Model *</Label>
@@ -181,36 +259,56 @@ const QRCodeForm = () => {
             </FormGroup>
 
             <FormGroup>
-              <Label>Manifacturing Year *</Label>
-              <Input type="text" value={mfg_year} disabled />
+              <Label>Manufacturing Year *</Label>
+              <Input type="text" value={mfgYear} disabled />
             </FormGroup>
 
             <FormGroup>
               <Label>Company *</Label>
-              <Input type="text" value={company} onChange={(e) => setCompany(e.target.value)} required />
+              <Input
+                type="text"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+                required
+              />
             </FormGroup>
 
             <FormGroup>
               <Label>Email *</Label>
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input
+                type="email"
+                value={email}
+               onChange={(e) => {
+      setEmail(e.target.value);
+      setMessage(""); // Clear error message when email changes
+    }}
+                required
+              />
             </FormGroup>
 
             <FormGroup>
               <Label>City *</Label>
-              <Input type="text" value={city} onChange={(e) => setCity(e.target.value)} required />
+              <Input
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                required
+              />
             </FormGroup>
-            <CheckboxGroup>
-  <InfoText>
-    We will be storing your data for future use.
-  </InfoText>
-  <div style={{ marginTop: '5px' }}>
-    <input type="checkbox" required />
-    <Label>I agree to the Privacy Policy *</Label>
-  </div>
-</CheckboxGroup>
 
-<div style={{ marginTop: '20px' }}></div>
-          <SubmitButton type="submit">SEND</SubmitButton>
+            <CheckboxGroup>
+              <InfoText>We will be storing your data for future use.</InfoText>
+              <div style={{ marginTop: '5px' }}>
+                <input type="checkbox" required />
+                <Label>I agree to the Privacy Policy *</Label>
+              </div>
+            </CheckboxGroup>
+
+            <div style={{ marginTop: '20px' }}></div>
+            <SubmitButton type="submit" disabled={isProcessing}>
+              {isProcessing ? "Processing..." : "SEND"}
+            </SubmitButton>
+            {message && <ErrorMessage message={message} onClose={() => setMessage("")} />}
           </form>
         </FormBox>
       </FormContainer>

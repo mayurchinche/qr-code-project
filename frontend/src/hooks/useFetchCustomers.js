@@ -4,11 +4,7 @@ const useFetchCustomers = (url) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (!url) return;
-
-    const fetchData = async () => {
+   const fetchData = async () => {
       try {
         console.log("url", url);
         setLoading(true);
@@ -25,10 +21,13 @@ const useFetchCustomers = (url) => {
       }
     };
 
-    fetchData();
-  }, [url]);
+    useEffect(() => {
+        if (url) {
+            fetchData();
+        }
+    }, [url]);
 
-  return { data, loading, error };
+  return { data, loading, error, refetch:fetchData };
 };
 
 export default useFetchCustomers;
