@@ -296,15 +296,7 @@ const ErrorMessage = ({ message, onClose }) => {
               />
             </FormGroup>
 
-            <CheckboxGroup>
-              <InfoText>We will be storing your data for future use.</InfoText>
-              <div style={{ marginTop: '5px' }}>
-                <input type="checkbox" required />
-                <Label>I agree to the Privacy Policy *</Label>
-              </div>
-            </CheckboxGroup>
-
-            <div style={{ marginTop: '20px' }}></div>
+            <div style={{ marginTop: '30px' }}></div>
             <SubmitButton type="submit" disabled={isProcessing}>
               {isProcessing ? "Processing..." : "SEND"}
             </SubmitButton>

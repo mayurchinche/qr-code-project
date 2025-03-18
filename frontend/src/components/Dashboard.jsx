@@ -25,6 +25,8 @@ import {
     InnerContainer,
     CopyButton,
     FieldContainer,
+    QRCodeImage,
+    DownloadButton,
     ErrorMessage
 } from './dashboardStyles';
 
@@ -39,6 +41,7 @@ const Dashboard = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const rowsPerPage = 5;
     const [modelName, setModelName] = useState('');
+    const [qrCode, setQrCode] = useState("");
     const [serialNumber, setSerialNumber] = useState('');
     const [mfg_year, setMfgYear] = useState('');
     const [generatedURL, setGeneratedURL] = useState('');
@@ -95,6 +98,7 @@ const handleGenerateURL = async () => {
             setIsSuccess(true);
             setIsAlreadyExists(false);
             setCopied(false); // Reset copied state
+            setQrCode(data.qr_code);
             await refetchProducts(); // Refresh the table with the latest data
         } else if (data.message && data.message === 'Already exists') {
             setIsSuccess(false);
@@ -125,6 +129,14 @@ const handleGenerateURL = async () => {
         }
       );
     }
+  };
+  const handleDownloadQR = () => {
+    const link = document.createElement("a");
+    link.href = qrCode;
+    link.download = "QR_Code.png";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
     const refreshCurrentView = () => {
@@ -336,6 +348,13 @@ const handleGenerateURL = async () => {
         {isSuccess && (
           <SuccessMessage>
             URL generated successfully:{' '}
+
+            <>
+              <QRCodeImage src={qrCode} alt="Generated QR Code" />
+              <DownloadButton onClick={handleDownloadQR}>Download QR Code</DownloadButton>
+            </>
+            <br>
+            </br>
             <a href={generatedURL} target="_blank" rel="noopener noreferrer">
               {generatedURL}
             </a>

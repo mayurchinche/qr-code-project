@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard';
 import FormPage from './components/FormPage';
 import ProductSubscription from './components/ProductSubscription';
 import QRCodeForm from './components/losma_form';
+// import QRCodeForm from './components/download_qr';
 
 import './index.css';
 const API_URL = import.meta.env.VITE_API_URL;

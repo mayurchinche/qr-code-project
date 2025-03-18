@@ -241,12 +241,18 @@ export const SuccessMessage = styled.div`
   width: 100%;
   text-align: center;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
   @media (max-width: 768px) {
     width: 100%;
     margin-right: 0;
     margin-bottom: 15px;
   }
 `;
+
 
 export const CopyButton = styled.button`
   margin-left: 10px;
@@ -284,4 +290,37 @@ export const FieldContainer = styled.div`
 export const ErrorMessage = styled.div`
   color: red;
   margin-top: 10px;
+`;
+
+
+export const QRCodeImage = styled.img`
+  width: 200px;
+  height: 200px;
+  margin-top: 20px;
+  border: 2px solid #008037;
+  border-radius: 8px;
+  display: block;
+  object-fit: contain;
+  align-self: center;
+
+  @media (max-width: 768px) {
+    width: 150px;
+    height: 150px;
+  }
+`;
+
+export const DownloadButton = styled.button`
+  margin-top: 10px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  background-color: #008037;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  align-self: center;
+
+  &:hover {
+    background-color: #00682e;
+  }
 `;

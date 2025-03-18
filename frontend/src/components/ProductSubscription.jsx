@@ -116,7 +116,7 @@ const ProductSubscription = () => {
         <MessageBox>
           <Title>🎉 Thank You for Registering!</Title>
           <Text>
-            We appreciate your trust in Our Company. <br /> <br />
+            We appreciate your trust in our company. <br /> <br />
             <strong>Your Purchase Details:</strong>
           </Text>
           <Text>
