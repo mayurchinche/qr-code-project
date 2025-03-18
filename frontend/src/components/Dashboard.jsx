@@ -348,7 +348,6 @@ const handleGenerateURL = async () => {
         {isSuccess && (
           <SuccessMessage>
             URL generated successfully:{' '}
-
             <>
               <QRCodeImage src={qrCode} alt="Generated QR Code" />
               <DownloadButton onClick={handleDownloadQR}>Download QR Code</DownloadButton>

@@ -93,7 +93,7 @@ Please change the parent <Route path="${L}"> to <Route path="${L==="/"?"*":`${L}
   width: 100%;
   border: none;
   border-radius: 4px;
-  background-color: #007bff;
+  background-color: #008037;
   color: white;
   font-size: 16px;
   cursor: pointer;

@@ -35,13 +35,13 @@ export const Button = styled.button`
   width: 100%;
   border: none;
   border-radius: 4px;
-  background-color: #007bff;
+  background-color: #008037;
   color: white;
   font-size: 16px;
   cursor: pointer;
 
   &:hover {
-    background-color: #0056b3;
+     background-color: #054922;
   }
 `;
 
