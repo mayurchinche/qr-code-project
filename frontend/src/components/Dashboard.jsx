@@ -72,7 +72,7 @@ const Dashboard = () => {
             (customer.customer_gmail.includes(customerFilterText) ||
                 customer.company_name.includes(customerFilterText)) &&
             (cityFilter === '' || customer.customer_city === cityFilter)
-    );
+    ).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     const filteredProducts = products
         .filter((product) =>
@@ -95,6 +95,7 @@ const handleGenerateURL = async () => {
         console.log("data", data);
         if (data.message !== 'Already exists' && data.url) {
             setGeneratedURL(data.url);
+
             setIsSuccess(true);
             setIsAlreadyExists(false);
             setCopied(false); // Reset copied state
@@ -104,6 +105,7 @@ const handleGenerateURL = async () => {
             setIsSuccess(false);
             setIsAlreadyExists(true);
             setGeneratedURL(data.url);
+            setQrCode(data.qr_code)
             console.log('URL already exists');
             setCopied(false);
         }
@@ -364,7 +366,13 @@ const handleGenerateURL = async () => {
         )}
         {isAlreadyExists && (
           <SuccessMessage>
-            URL already exists:{' '}
+            QR Code already exists:{' '}
+            <>
+              <QRCodeImage src={qrCode} alt="Generated QR Code" />
+              <DownloadButton onClick={handleDownloadQR}>Download QR Code</DownloadButton>
+            </>
+            <br>
+            </br>
             <a href={generatedURL} target="_blank" rel="noopener noreferrer">
               {generatedURL}
             </a>

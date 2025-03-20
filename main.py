@@ -186,7 +186,12 @@ def generate_qr_url(model_name: str, serial_number: str, mfg_year: str):
     if count > 0:
         cursor.close()
         connection.close()
-        return {"message": "Already exists", "url": material_url}
+        # **3️⃣ Generate QR Code**
+        qr = qrcode.make(material_url)
+        buffer = io.BytesIO()
+        qr.save(buffer, format="PNG")
+        qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+        return {"message": "Already exists", "qr_code": f"data:image/png;base64,{qr_base64}", "url": material_url}
 
     # **2️⃣ Insert if not exists**
     insert_query = """
