@@ -134,8 +134,11 @@ const handleGenerateURL = async () => {
   };
   const handleDownloadQR = () => {
     const link = document.createElement("a");
+    const fileName = `${modelName}_${serialNumber}_${mfg_year}.png`;
+
     link.href = qrCode;
-    link.download = "QR_Code.png";
+
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
