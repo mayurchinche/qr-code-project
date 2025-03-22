@@ -290,10 +290,10 @@ def submit_form(
                 <li><strong>🛠️ User Manual:</strong> <a href="{MANUAL_URL}" style="color: #1a73e8;">Read Manual</a></li>
             </ul>
 
-            <p>If you have any questions, feel free to <a href="{SUPPORT_EMAIL}" style="color: #1a73e8;">contact us</a>.</p>
+            <p>If you have any questions, feel free to contact us on below email {SUPPORT_EMAIL}</p>
 
-            <p>Best Regards,<br><b>Your Company Name</b><br>
-            <a href="{THANKYOU_BASENAME}" style="color: #1a73e8;">{COMPANY_WEBSITE}</a></p>
+            <p>Best Regards,<br><b>{THANKYOU_BASENAME}</b><br>
+            <a href="{THANKYOU_BASENAME}" style="color: #1a73e8;"></a>{COMPANY_WEBSITE}</p>
         </body>
         </html>
         """
