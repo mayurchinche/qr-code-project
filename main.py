@@ -21,6 +21,7 @@ from pydantic import BaseModel
 from typing import List
 import mysql.connector
 from datetime import datetime
+import json
 
 # Define IST timezone
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -49,7 +50,7 @@ create_tables()
 
 app = FastAPI()
 
-front_end_api = os.getenv("FRONT_END_API", "")
+front_end_api = json.loads(os.getenv("FRONT_END_API", "[]"))
 catalogue_url = os.getenv("CATALOGUE_URL", "")
 manual_url = os.getenv("MANUAL_URL", "")
 
@@ -58,7 +59,7 @@ print("FRONT_END_API", front_end_api)
 # Enable CORS for React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[front_end_api, 'http://localhost:5173'],  # Update if needed
+    allow_origins=front_end_api,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
