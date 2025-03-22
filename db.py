@@ -12,7 +12,8 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_NAME = os.getenv("DB_NAME")
 
-print("Loaded Env Vars:", DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
+
+# print("Loaded Env Vars:", DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
 
 
 def get_db_connection():

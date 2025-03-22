@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useLocation } from "react-router-dom";
 import styled from "@emotion/styled";
 
@@ -105,6 +106,17 @@ const ProductSubscription = () => {
   const mfg_year = queryParams.get("mfg_year") || "Mfg Year";
   const catalogueURL = import.meta.env.VITE_CATALOGUE_URL;
   const manualURL = import.meta.env.VITE_MANUAL_URL;
+  const [catalogueURL1, setCatalogueURL] = useState('');
+  const [manualURL1, setManualURL] = useState('');
+
+  useEffect(() => {
+  axios.get(`${import.meta.env.VITE_API_URL}/get_product_pdfs`)
+    .then(response => {
+      setCatalogueURL(response.data.catalogue_url);
+      setManualURL(response.data.manual_url);
+    })
+    .catch(error => console.error("Error fetching PDF URLs:", error));
+}, []);
 
   return (
     <PageContainer>
@@ -128,8 +140,8 @@ const ProductSubscription = () => {
           <Text>
             <strong>📂 Product Resources:</strong>
           </Text>
-          <ResourceLink href={catalogueURL} target="_blank">📘 View Catalogue</ResourceLink>
-          <ResourceLink href={manualURL} target="_blank">📖 Read Manual</ResourceLink>
+          <ResourceLink href={catalogueURL1} target="_blank">📘 View Catalogue</ResourceLink>
+          <ResourceLink href={manualURL1} target="_blank">📖 Read Manual</ResourceLink>
         </MessageBox>
       </MessageContainer>
     </PageContainer>

@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
 from fastapi.openapi.utils import get_openapi
+from starlette.staticfiles import StaticFiles
 
 from create_tables import create_tables
 from db import get_db_connection
@@ -46,20 +47,26 @@ load_dotenv()
 
 # Load environment variables from .env file
 
-create_tables()
+# create_tables()
 
 app = FastAPI()
 
-front_end_api = json.loads(os.getenv("FRONT_END_API", "[]"))
-catalogue_url = os.getenv("CATALOGUE_URL", "")
-manual_url = os.getenv("MANUAL_URL", "")
+FRONT_END_API = os.getenv("FRONT_END_API", "")
+SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL", "")
+BACKEND_API = os.getenv("BACKEND_API", "")
+THANKYOU_BASENAME = os.getenv("THANKYOU_BASENAME", "")
+COMPANY_WEBSITE = os.getenv("COMPANY_WEBSITE", "")
 
-print("FRONT_END_API", front_end_api)
+CATALOGUE_URL = f"{BACKEND_API}/files/catalogue.pdf"
+MANUAL_URL = f"{BACKEND_API}/files/manual.pdf"
+
+print("FRONT_END_API", FRONT_END_API)
+print("BACKEND_API", BACKEND_API)
 
 # Enable CORS for React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=front_end_api,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -76,6 +83,14 @@ SENDER_NAME = os.getenv("SENDER_NAME", "")
 configuration = sib_api_v3_sdk.Configuration()
 configuration.api_key['api-key'] = BREVO_API_KEY
 email_api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+
+app.mount("/files", StaticFiles(directory="service_files"), name="files")
+
+
+# getting pdfs
+@app.get("/get_product_pdfs")
+async def get_product_pdfs():
+    return {"catalogue_url": CATALOGUE_URL, "manual_url": MANUAL_URL}
 
 
 # Define response model
@@ -172,7 +187,7 @@ def get_customer_queries():
 @app.get("/generate_qr_url", summary="Generate QR Code with URL", tags=["QR Code"])
 def generate_qr_url(model_name: str, serial_number: str, mfg_year: str):
     """Generate a QR Code with a URL containing model and serial number."""
-    material_url = f"{front_end_api}/form?model={model_name}&serial={serial_number}&mfg_year={mfg_year}"
+    material_url = f"{FRONT_END_API}/form?model={model_name}&serial={serial_number}&mfg_year={mfg_year}"
 
     connection = get_db_connection()
     cursor = connection.cursor()
@@ -271,14 +286,14 @@ def submit_form(
 
             <h3>📘 Product Resources:</h3>
             <ul>
-                <li><strong>📄 Product Catalogue:</strong> <a href="{catalogue_url}" style="color: #1a73e8;">View Catalogue</a></li>
-                <li><strong>🛠️ User Manual:</strong> <a href="{manual_url}" style="color: #1a73e8;">Read Manual</a></li>
+                <li><strong>📄 Product Catalogue:</strong> <a href="{CATALOGUE_URL}" style="color: #1a73e8;">View Catalogue</a></li>
+                <li><strong>🛠️ User Manual:</strong> <a href="{MANUAL_URL}" style="color: #1a73e8;">Read Manual</a></li>
             </ul>
 
-            <p>If you have any questions, feel free to <a href="mailto:support@yourcompany.com" style="color: #1a73e8;">contact us</a>.</p>
+            <p>If you have any questions, feel free to <a href="{SUPPORT_EMAIL}" style="color: #1a73e8;">contact us</a>.</p>
 
             <p>Best Regards,<br><b>Your Company Name</b><br>
-            <a href="https://yourcompany.com" style="color: #1a73e8;">www.yourcompany.com</a></p>
+            <a href="{THANKYOU_BASENAME}" style="color: #1a73e8;">{COMPANY_WEBSITE}</a></p>
         </body>
         </html>
         """
