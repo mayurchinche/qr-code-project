@@ -94,13 +94,14 @@ const handleGenerateURL = async () => {
         const data = response.data;
         console.log("data", data);
         if (data.message !== 'Already exists' && data.url) {
-            setGeneratedURL(data.url);
 
+            await refetchProducts(); // Refresh the table with the latest data
+            setGeneratedURL(data.url);
             setIsSuccess(true);
             setIsAlreadyExists(false);
             setCopied(false); // Reset copied state
             setQrCode(data.qr_code);
-            await refetchProducts(); // Refresh the table with the latest data
+
         } else if (data.message && data.message === 'Already exists') {
             setIsSuccess(false);
             setIsAlreadyExists(true);
@@ -350,6 +351,7 @@ const handleGenerateURL = async () => {
             {isGenerating ? 'Generating...' : 'Generate'}
           </GenerateButton>
         </FormRow>
+        {productsLoading && <Loader />}
         {isSuccess && (
           <SuccessMessage>
             URL generated successfully:{' '}
