@@ -140,8 +140,8 @@ const ProductSubscription = () => {
           <Text>
             <strong>📂 Product Resources:</strong>
           </Text>
-          <ResourceLink href={`https://files.losma.co.in/files/catalogue.pdf`} target="_blank">📘 View Catalogue</ResourceLink>
-          <ResourceLink href={`https://files.losma.co.in/files/manual.pdf`} target="_blank">📖 Read Manual</ResourceLink>
+          <ResourceLink href={catalogueURL1} target="_blank">📘 View Catalogue</ResourceLink>
+          <ResourceLink href={manualURL1} target="_blank">📖 Read Manual</ResourceLink>
         </MessageBox>
       </MessageContainer>
     </PageContainer>
