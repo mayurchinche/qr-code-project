@@ -163,6 +163,7 @@ const handleGenerateURL = async () => {
 
     const refreshCurrentView = () => {
         if (loadCustomers) {
+            setFlagForQrGenerated(false);
             setIsSuccess(false);
             setMfgYear('')
             setSerialNumber('')
@@ -171,6 +172,7 @@ const handleGenerateURL = async () => {
             setError(false);
             refetchCustomers();
         } else if (loadProducts) {
+            setFlagForQrGenerated(false);
             setIsSuccess(false);
             setMfgYear('')
             setSerialNumber('')
@@ -201,8 +203,10 @@ const handleGenerateURL = async () => {
         <DashboardContainer>
             <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap' }}>
                 <DashboardButton onClick={() => {
-                    setLoadProducts(false);
+                setFlagForQrGenerated(false);
                     setLoadCustomers(true);
+                    setLoadProducts(false);
+
                 }}>
                     View Customer Details
                 </DashboardButton>
