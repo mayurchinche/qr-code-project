@@ -19,6 +19,7 @@ import {
     StyledLabel,
     StyledInput,
     GenerateButton,
+    ResetButton,
     FormRow,
     Title,
     SuccessMessage,
@@ -60,6 +61,8 @@ const Dashboard = () => {
         loadProducts ? `${API_URL}/get_products` : null
     );
 
+    const [flagForQrGenerated, setFlagForQrGenerated] = useState(false);
+
     useEffect(() => {
         if (loadProducts) setCurrentPage(1);
         if (loadCustomers) setCurrentPage(1);
@@ -81,6 +84,18 @@ const Dashboard = () => {
         )
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Sort by latest first
 
+
+const resetForm = () => {
+  setSerialNumber("");
+  setFlagForQrGenerated(false);
+  setQrCode("");
+  setGeneratedURL("");
+  setIsSuccess(false);
+  setIsAlreadyExists(false);
+  setError(false);
+};
+
+
 const handleGenerateURL = async () => {
 
     if (modelName.trim() === '' || serialNumber.trim() === '' || mfg_year.trim() === '') {
@@ -101,13 +116,14 @@ const handleGenerateURL = async () => {
             setIsAlreadyExists(false);
             setCopied(false); // Reset copied state
             setQrCode(data.qr_code);
-
+            setFlagForQrGenerated(true);
         } else if (data.message && data.message === 'Already exists') {
             setIsSuccess(false);
             setIsAlreadyExists(true);
             setGeneratedURL(data.url);
             setQrCode(data.qr_code)
             console.log('URL already exists');
+            setFlagForQrGenerated(true);
             setCopied(false);
         }
     } catch (error) {
@@ -325,6 +341,7 @@ const handleGenerateURL = async () => {
               aria-required="true"
               aria-invalid={error ? "true" : "false"}
               onChange={(e) => setModelName(e.target.value)}
+
             />
           </FieldContainer>
           <FieldContainer>
@@ -335,6 +352,7 @@ const handleGenerateURL = async () => {
               aria-required="true"
               aria-invalid={error ? "true" : "false"}
               onChange={(e) => setSerialNumber(e.target.value)}
+               disabled={flagForQrGenerated}
             />
           </FieldContainer>
           <FieldContainer>
@@ -345,11 +363,16 @@ const handleGenerateURL = async () => {
               aria-required="true"
               aria-invalid={error ? "true" : "false"}
               onChange={(e) => setMfgYear(e.target.value)}
+
             />
           </FieldContainer>
-          <GenerateButton onClick={handleGenerateURL} disabled={isGenerating}>
-            {isGenerating ? 'Generating...' : 'Generate'}
-          </GenerateButton>
+          {!flagForQrGenerated ? (
+                <GenerateButton onClick={handleGenerateURL} disabled={isGenerating}>
+                {isGenerating ? "Generating..." : "Generate"}
+                </GenerateButton>
+            ) : (
+              <ResetButton onClick={resetForm}>Generate New</ResetButton>
+            )}
         </FormRow>
         {productsLoading && <Loader />}
         {isSuccess && (

@@ -231,6 +231,35 @@ export const GenerateButton = styled.button`
   }
 `;
 
+export const ResetButton = styled.button`
+  padding: 10px 15px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: #008037;
+  color: white;
+  cursor: pointer;
+  margin-left: 10px;
+
+  &:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 10px;
+  }
+    &:hover {
+    background-color: #054922;
+  }
+  @media (max-width: 768px) {
+    width: 100%;
+    margin: 8px 0;
+  }
+`;
+
 export const SuccessMessage = styled.div`
   margin-top: 20px;
   padding: 10px;
