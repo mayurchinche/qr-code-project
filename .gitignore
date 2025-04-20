@@ -1,2 +1,9 @@
-frontend/.env
+# Root-level env and credentials
 .env
+credentials.json
+
+# Subfolder env files
+frontend/.env
+
+# Google service account config
+config/service_account.json

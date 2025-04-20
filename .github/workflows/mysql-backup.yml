@@ -37,4 +37,5 @@ jobs:
           GDRIVE_CREDENTIALS: ${{ secrets.GDRIVE_CREDENTIALS }}
         run: |
           echo "$GDRIVE_CREDENTIALS" > credentials.json
+          echo "$GDRIVE_CREDENTIALS"
           python scripts/upload_to_drive.py

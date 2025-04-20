@@ -4,7 +4,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
-SERVICE_ACCOUNT_FILE = "./config/service_account.json"
+SERVICE_ACCOUNT_FILE = "credentials.json"
 FOLDER_ID = "1YzL4tmgyfLOYbzLntlp8yoXBjG2nmbZH"
 # Load service account credentials
 creds = service_account.Credentials.from_service_account_file(

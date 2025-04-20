@@ -4,7 +4,7 @@ from googleapiclient.http import MediaIoBaseUpload
 import io
 
 # Load credentials
-SERVICE_ACCOUNT_FILE = "config/service_account.json"
+SERVICE_ACCOUNT_FILE = "credentials.json"
 SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 
 credentials = service_account.Credentials.from_service_account_file(
