@@ -1,0 +1,40 @@
+name: MySQL Backup to Google Drive
+
+on:
+  schedule:
+    - cron: '0 1 * * *'  # Every day at 1 AM UTC
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install MySQL Client
+        run: sudo apt-get update && sudo apt-get install -y mysql-client
+
+      - name: Dump MySQL Database
+        run: |
+          mkdir -p backups
+          TIMESTAMP=$(date +%F_%H-%M)
+          DUMP_FILE="backups/db_backup_$TIMESTAMP.sql"
+          mysqldump -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USER }} -p${{ secrets.DB_PASS }} ${{ secrets.DB_NAME }} > $DUMP_FILE
+          echo "Dump created: $DUMP_FILE"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Google Drive uploader dependencies
+        run: pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+
+      - name: Upload backup to Google Drive
+        env:
+          GDRIVE_CREDENTIALS: ${{ secrets.GDRIVE_CREDENTIALS }}
+        run: |
+          echo "$GDRIVE_CREDENTIALS" > credentials.json
+          python scripts/upload_to_drive.py
