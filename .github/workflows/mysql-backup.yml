@@ -5,27 +5,45 @@ on:
     - cron: '0 1 * * *'  # Every day at 1 AM UTC
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: write  # needed by the keepalive step to reset GitHub's 60-day inactivity timer
+
 jobs:
   backup:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install MySQL Client
         run: sudo apt-get update && sudo apt-get install -y mysql-client
 
       - name: Dump MySQL Database
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_USER: ${{ secrets.DB_USER }}
+          MYSQL_PWD: ${{ secrets.DB_PASS }}  # read by mysqldump; keeps the password off the command line
+          DB_NAME: ${{ secrets.DB_NAME }}
         run: |
+          set -euo pipefail
           mkdir -p backups
           TIMESTAMP=$(date +%F_%H-%M)
           DUMP_FILE="backups/db_backup_$TIMESTAMP.sql"
-          mysqldump -h ${{ secrets.DB_HOST }} -P ${{ secrets.DB_PORT }} -u ${{ secrets.DB_USER }} -p${{ secrets.DB_PASS }} ${{ secrets.DB_NAME }} > $DUMP_FILE
-          echo "Dump created: $DUMP_FILE"
+          mysqldump -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
+            --single-transaction --routines --triggers --set-gtid-purged=OFF \
+            "$DB_NAME" > "$DUMP_FILE"
+          # Refuse to upload an empty or truncated dump (it would rotate out good backups)
+          if ! tail -n 1 "$DUMP_FILE" | grep -q "Dump completed"; then
+            echo "::error::Dump looks incomplete: $DUMP_FILE"
+            exit 1
+          fi
+          echo "Dump created: $DUMP_FILE ($(du -h "$DUMP_FILE" | cut -f1))"
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
@@ -35,7 +53,17 @@ jobs:
       - name: Upload backup to Google Drive
         env:
           GDRIVE_CREDENTIALS: ${{ secrets.GDRIVE_CREDENTIALS }}
+          KEEP_BACKUPS: '14'
         run: |
-          echo "$GDRIVE_CREDENTIALS" > credentials.json
-          echo "$GDRIVE_CREDENTIALS"
+          printf '%s' "$GDRIVE_CREDENTIALS" > credentials.json
           python scripts/upload_to_drive.py
+          rm -f credentials.json
+
+  # GitHub disables scheduled workflows in public repos after 60 days without repo activity.
+  # This re-enables the workflow through the API (no dummy commits) so the daily backup keeps running.
+  keepalive:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: backup
+    steps:
+      - uses: liskin/gh-workflow-keepalive@v1

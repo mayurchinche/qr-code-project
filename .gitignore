@@ -7,3 +7,7 @@ frontend/.env
 
 # Google service account config
 config/service_account.json
+
+# Local in-memory DB snapshots (MEMDB_STORE=local)
+memdb_data/
+*.sqlite

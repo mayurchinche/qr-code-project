@@ -22,17 +22,9 @@ if not backup_files:
 latest_backup = backup_files[0]
 latest_backup_name = os.path.basename(latest_backup)
 
-# Delete existing .sql files from the Drive folder (except the one being uploaded)
-query = f"'{FOLDER_ID}' in parents and mimeType='application/sql'"
-results = service.files().list(q=query, fields="files(id, name)").execute()
-files = results.get('files', [])
+KEEP_BACKUPS = int(os.getenv("KEEP_BACKUPS", "14"))
 
-for file in files:
-    if file['name'] != latest_backup_name:
-        print(f"Deleting old backup: {file['name']} (ID: {file['id']})")
-        service.files().delete(fileId=file['id']).execute()
-
-# Upload the latest backup
+# Upload the latest backup first, so a failed upload never leaves Drive without backups
 file_metadata = {
     'name': latest_backup_name,
     'parents': [FOLDER_ID]
@@ -40,3 +32,14 @@ file_metadata = {
 media = MediaFileUpload(latest_backup, mimetype='application/sql')
 file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 print(f"Backup uploaded to Google Drive. File ID: {file.get('id')}")
+
+# Keep only the newest KEEP_BACKUPS .sql files in the Drive folder
+query = f"'{FOLDER_ID}' in parents and mimeType='application/sql' and trashed=false"
+results = service.files().list(
+    q=query, fields="files(id, name, createdTime)", orderBy="createdTime desc", pageSize=1000
+).execute()
+files = results.get('files', [])
+
+for old in files[KEEP_BACKUPS:]:
+    print(f"Deleting old backup: {old['name']} (ID: {old['id']})")
+    service.files().delete(fileId=old['id']).execute()

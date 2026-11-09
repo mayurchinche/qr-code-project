@@ -9,9 +9,11 @@ import os
 from dotenv import load_dotenv
 from fastapi.openapi.utils import get_openapi
 from starlette.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
+from contextlib import asynccontextmanager
+import logging
 
-from create_tables import create_tables
-from db import get_db_connection
+from memdb import create_db_from_env
 
 from typing import List
 from pydantic import BaseModel
@@ -20,13 +22,13 @@ from datetime import datetime, timezone, timedelta
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List
-import mysql.connector
 from datetime import datetime
 import json
 
 # Define IST timezone
 IST = timezone(timedelta(hours=5, minutes=30))
 load_dotenv()
+logging.basicConfig(level=logging.INFO)
 # import base64
 # import requests
 # from googleapiclient.http import MediaIoBaseUpload
@@ -47,9 +49,18 @@ load_dotenv()
 
 # Load environment variables from .env file
 
-# create_tables()
+# In-memory database, restored from Google Drive on startup and backed up on every write.
+db = create_db_from_env()
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app):
+    await run_in_threadpool(db.start)  # fails startup if the snapshot can't be restored
+    yield
+    await run_in_threadpool(db.stop, 20.0)  # final backup on SIGTERM (Render allows 30s)
+
+
+app = FastAPI(lifespan=lifespan)
 
 FRONT_END_API = os.getenv("FRONT_END_API", "")
 SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL", "")
@@ -105,18 +116,11 @@ class ProductDetail(BaseModel):
 @app.get("/get_products", response_model=List[ProductDetail], summary="Fetch Product Details", tags=["Product Details"])
 def get_products():
     """Fetch all product details from the database."""
-    connection = get_db_connection()
-    cursor = connection.cursor()
-
-    query = """
+    results = db.query("""
         SELECT model_name, serial_number,mfg_year, material_url, created_at 
         FROM product_details
-    """
-    cursor.execute(query)
-    results = cursor.fetchall()
+    """)
     print(len(results))
-    cursor.close()
-    connection.close()
 
     products = []
     for row in results:
@@ -152,17 +156,10 @@ class CustomerQuery(BaseModel):
          tags=["Customer Queries"])
 def get_customer_queries():
     """Fetch all customer queries from the database."""
-    connection = get_db_connection()
-    cursor = connection.cursor()
-
-    query = """
+    results = db.query("""
         SELECT model_name, serial_number, mfg_year,customer_gmail, customer_city, company_name, created_at 
         FROM product_queries
-    """
-    cursor.execute(query)
-    results = cursor.fetchall()
-    cursor.close()
-    connection.close()
+    """)
 
     queries = []
     for row in results:
@@ -189,19 +186,13 @@ def generate_qr_url(model_name: str, serial_number: str, mfg_year: str):
     """Generate a QR Code with a URL containing model and serial number."""
     material_url = f"{FRONT_END_API}/form?model={model_name}&serial={serial_number}&mfg_year={mfg_year}"
 
-    connection = get_db_connection()
-    cursor = connection.cursor()
-
     # **1️⃣ Check if the entry already exists**
-    check_query = """
-        SELECT COUNT(*) FROM product_details WHERE model_name = %s AND serial_number = %s AND mfg_year = %s
-    """
-    cursor.execute(check_query, (model_name, serial_number, mfg_year))
-    (count,) = cursor.fetchone()
+    (count,) = db.query(
+        "SELECT COUNT(*) FROM product_details WHERE model_name = ? AND serial_number = ? AND mfg_year = ?",
+        (model_name, serial_number, mfg_year),
+    )[0]
 
     if count > 0:
-        cursor.close()
-        connection.close()
         # **3️⃣ Generate QR Code**
         qr = qrcode.make(material_url)
         buffer = io.BytesIO()
@@ -210,21 +201,17 @@ def generate_qr_url(model_name: str, serial_number: str, mfg_year: str):
         return {"message": "Already exists", "qr_code": f"data:image/png;base64,{qr_base64}", "url": material_url}
 
     # **2️⃣ Insert if not exists**
-    insert_query = """
-        INSERT INTO product_details (model_name, serial_number,mfg_year, material_url)
-        VALUES (%s, %s,%s, %s)
-    """
-    cursor.execute(insert_query, (model_name, serial_number, mfg_year, material_url))
-    connection.commit()
+    with db.write() as cursor:
+        cursor.execute(
+            "INSERT INTO product_details (model_name, serial_number, mfg_year, material_url) VALUES (?, ?, ?, ?)",
+            (model_name, serial_number, mfg_year, material_url),
+        )
 
     # **3️⃣ Generate QR Code**
     qr = qrcode.make(material_url)
     buffer = io.BytesIO()
     qr.save(buffer, format="PNG")
     qr_base64 = base64.b64encode(buffer.getvalue()).decode()
-
-    cursor.close()
-    connection.close()
 
     return {"qr_code": f"data:image/png;base64,{qr_base64}", "url": material_url}
 
@@ -236,18 +223,12 @@ def check_registration(
         mfg_year: str = Form(...),
         email: str = Form(...)
 ):
-    connection = get_db_connection()
-    cursor = connection.cursor()
-    query = """
+    result = db.query("""
         SELECT EXISTS(
             SELECT 1 FROM product_queries
-            WHERE model_name = %s AND serial_number = %s AND mfg_year = %s AND customer_gmail = %s
+            WHERE model_name = ? AND serial_number = ? AND mfg_year = ? AND customer_gmail = ?
         ) AS already_exists
-    """
-    cursor.execute(query, (model_name, serial_number, mfg_year, email))
-    result = cursor.fetchone()
-    cursor.close()
-    connection.close()
+    """, (model_name, serial_number, mfg_year, email))[0]
     exists = result[0] == 1
     return {"exists": exists}
 
@@ -262,16 +243,13 @@ def submit_form(
     # pdf_path = download_pdf_from_drive(invoice_link["invoice_url"], model, serial)
     # Send email to user
 
-    connection = get_db_connection()
-    cursor = connection.cursor()
-    insert_query = """
-                INSERT INTO product_queries (model_name, serial_number,mfg_year, customer_gmail,customer_city,company_name)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                """
-    cursor.execute(insert_query, (model_name, serial_number, mfg_year, email, customer_city, company_name))
-    connection.commit()
-    cursor.close()
-    connection.close()
+    with db.write() as cursor:
+        cursor.execute(
+            """INSERT INTO product_queries
+               (model_name, serial_number, mfg_year, customer_gmail, customer_city, company_name)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (model_name, serial_number, mfg_year, email, customer_city, company_name),
+        )
 
     """Send a professional purchase confirmation email to the customer."""
 
@@ -444,6 +422,15 @@ def send_email(to_email, subject, body):
 #         return {"error": "Invoice not found"}
 #
 #     return {"invoice_url": result[0]}
+
+
+@app.get("/health/db", summary="In-memory database backup status", tags=["Health"])
+def health_db():
+    """503 when writes are waiting on a failing backup, so Render/uptime monitors can alert."""
+    status = db.status()
+    if status["unsaved_writes"] and status["consecutive_failures"]:
+        raise HTTPException(status_code=503, detail=status)
+    return status
 
 
 @app.get("/docs", include_in_schema=False)
