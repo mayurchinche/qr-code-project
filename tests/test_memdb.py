@@ -171,6 +171,24 @@ class MemDBTests(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 db.start()
 
+    def test_daily_copy_saved_without_writes(self):
+        seed = self.make(allow_empty=True)
+        seed.start()
+        add_product(seed, "M1")
+        seed.stop()
+        for n in os.listdir(self.dir):
+            if n.startswith("qr_app_db_2"):
+                os.remove(os.path.join(self.dir, n))
+        db = self.make()
+        db.start()  # no writes at all
+        today = datetime.utcnow().strftime("%Y-%m-%d")
+        for _ in range(50):
+            if db.status()["daily_copy_day"] == today:
+                break
+            time.sleep(0.1)
+        self.assertTrue(os.path.exists(os.path.join(self.dir, f"qr_app_db_{today}.sqlite")))
+        self.assertEqual(db.version, 1, "a daily copy must not bump the latest snapshot")
+
     def test_daily_copies_are_pruned(self):
         store = LocalFileStore(self.dir)
         for day in ["2026-01-01", "2026-01-02", "2026-01-03", "2026-01-04"]:

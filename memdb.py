@@ -165,6 +165,7 @@ class MemDB:
             self._conn.commit()
         self._thread = threading.Thread(target=self._run, name="memdb-backup", daemon=True)
         self._thread.start()
+        self._wake.set()  # save today's daily copy right after startup
         self.started = True
 
     def stop(self, timeout: float = 20.0) -> bool:
@@ -224,6 +225,7 @@ class MemDB:
             "snapshot_version": self.version,
             "unsaved_writes": self._dirty_seq - self._saved_seq,
             "last_backup_at": self.last_backup_at,
+            "daily_copy_day": self._daily_day,
             "last_error": self.last_error,
             "consecutive_failures": self.consecutive_failures,
             "merges": self.merges,
@@ -249,8 +251,24 @@ class MemDB:
                     backoff = min(self.max_backoff_seconds, 2 ** min(self.consecutive_failures, 6))
                     log.exception("Backup failed (attempt %d), retrying in %.0fs",
                                   self.consecutive_failures, backoff)
+            elif not self._stopping.is_set():
+                self._ensure_daily_copy()
             if self._stopping.is_set() and self._saved_seq >= self._dirty_seq:
                 return
+
+    def _ensure_daily_copy(self) -> None:
+        """Keep one dated copy per day even when there were no writes that day."""
+        day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        if self._daily_day == day:
+            return
+        try:
+            with self._lock:
+                data = _conn_to_bytes(self._conn)
+            self.store.save_daily(data, day, self.keep_days)
+            self._daily_day = day
+            log.info("Saved daily snapshot copy for %s (%d bytes)", day, len(data))
+        except Exception:
+            log.exception("Daily snapshot copy failed; will retry")
 
     def _backup_once(self) -> None:
         remote = self.store.remote_version()
