@@ -19,8 +19,7 @@ from typing import List
 from pydantic import BaseModel
 from datetime import datetime, timezone, timedelta
 
-from fastapi import FastAPI, HTTPException, Depends, Header
-import secrets
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List
 from datetime import datetime
@@ -423,31 +422,6 @@ def send_email(to_email, subject, body):
 #         return {"error": "Invoice not found"}
 #
 #     return {"invoice_url": result[0]}
-
-
-def _require_admin(token):
-    """Admin endpoints are disabled unless ADMIN_TOKEN is set; the X-Admin-Token header must match."""
-    expected = os.getenv("ADMIN_TOKEN", "")
-    if not expected or not token or not secrets.compare_digest(token, expected):
-        raise HTTPException(status_code=403, detail="Forbidden")
-
-
-@app.delete("/admin/products", summary="Delete one product (admin)", tags=["Admin"], include_in_schema=False)
-def delete_product(model_name: str, serial_number: str, mfg_year: str,
-                   x_admin_token: str = Header(None)):
-    """Delete a product_details row by its exact model, serial and year, then wait for the Drive backup."""
-    _require_admin(x_admin_token)
-    with db.write() as cursor:
-        cursor.execute(
-            "DELETE FROM product_details WHERE model_name = ? AND serial_number = ? AND mfg_year = ?",
-            (model_name, serial_number, mfg_year),
-        )
-        deleted = cursor.rowcount
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Product not found")
-    backed_up = db.flush(20)
-    print(f"Admin deleted product {model_name}/{serial_number}/{mfg_year}; backed_up={backed_up}")
-    return {"deleted": deleted, "backed_up": backed_up, "snapshot_version": db.version}
 
 
 @app.get("/health/db", summary="In-memory database backup status", tags=["Health"])

@@ -223,24 +223,6 @@ class AppEndpointTests(unittest.TestCase):
             self.assertEqual(main.get_customer_queries()[0]["customer_gmail"], "c@x.com")
             self.assertTrue(main.db.flush(5))
             self.assertEqual(main.health_db()["unsaved_writes"], 0)
-
-            from fastapi import HTTPException
-            with mock.patch.dict(os.environ, {"ADMIN_TOKEN": ""}):  # disabled when unset
-                with self.assertRaises(HTTPException) as e:
-                    main.delete_product("GALILEO", "SN-1", "2026", x_admin_token="")
-                self.assertEqual(e.exception.status_code, 403)
-            with mock.patch.dict(os.environ, {"ADMIN_TOKEN": "s3cret"}):
-                for bad in (None, "wrong"):
-                    with self.assertRaises(HTTPException) as e:
-                        main.delete_product("GALILEO", "SN-1", "2026", x_admin_token=bad)
-                    self.assertEqual(e.exception.status_code, 403)
-                with self.assertRaises(HTTPException) as e:
-                    main.delete_product("GALILEO", "NOPE", "2026", x_admin_token="s3cret")
-                self.assertEqual(e.exception.status_code, 404)
-                r = main.delete_product("GALILEO", "SN-1", "2026", x_admin_token="s3cret")
-                self.assertEqual((r["deleted"], r["backed_up"]), (1, True))
-            self.assertEqual(main.get_products(), [])
-            self.assertEqual(len(rows_in_store(main.db.store, "product_details")), 0)
         finally:
             main.db.stop(5)
 
